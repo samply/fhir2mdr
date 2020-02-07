@@ -114,7 +114,7 @@ public class ModelToXSDObjects {
         }
         if(val.getType().equals(new CalendarType().getType())){
             CalendarType calVal = (CalendarType) val;
-            calVal.getFormat().fillAttributes(xmlVal);
+            fillAttributes(calVal.getFormat(),xmlVal);
 
         }
         if(val.getType().equals(new FloatType().getType())){
@@ -238,6 +238,47 @@ public class ModelToXSDObjects {
     private String getNextIdentifier(){
         this.runningId = runningId+1;
         return Integer.toString(runningId);
+    }
+
+    public DescribedValueDomain fillAttributes(DateTimeFormatEnum format, DescribedValueDomain toBeFilled) {
+
+        //TODO Test
+        switch (format) {
+            case MONTH_YEAR:
+                toBeFilled.setFormat("YYYY-MM");
+                toBeFilled.setDatatype("DATE");
+                toBeFilled.setMaxCharacters(BigInteger.valueOf(7));
+                toBeFilled.setDescription("YYYY-MM");
+                toBeFilled.setValidationType("DATE");
+                toBeFilled.setValidationData("ISO_8601");
+                return toBeFilled;
+            case DAY_MONTH_YEAR:
+                toBeFilled.setFormat("YYYY-MM-DD");
+                toBeFilled.setDatatype("DATE");
+                toBeFilled.setMaxCharacters(BigInteger.valueOf(10));
+                toBeFilled.setDescription("YYYY-MM-DD");
+                toBeFilled.setValidationType("DATE");
+                toBeFilled.setValidationData("ISO_8601");
+                return toBeFilled;
+            case DATE_HOURS_MINUTES:
+                toBeFilled.setFormat("YYYY-MM-DD hh:mm");
+                toBeFilled.setDatatype("DATETIME");
+                toBeFilled.setMaxCharacters(BigInteger.valueOf(16));
+                toBeFilled.setDescription("YYYY-MM-DD hh:mm");
+                toBeFilled.setValidationType("DATETIME");
+                toBeFilled.setValidationData("ISO_8601; HOURS_24");
+                return toBeFilled;
+            case DATE_HOURS_MINUTES_SECONDS:
+                toBeFilled.setFormat("YYYY-MM-DD hh:mm:ss");
+                toBeFilled.setDatatype("DATETIME");
+                toBeFilled.setMaxCharacters(BigInteger.valueOf(19));
+                toBeFilled.setDescription("YYYY-MM-DD hh:mm:ss");
+                toBeFilled.setValidationType("DATETIME");
+                toBeFilled.setValidationData("ISO_8601; HOURS_24_WITH_SECONDS");
+                return toBeFilled;
+            default:
+                return toBeFilled;
+        }
     }
 
 }
