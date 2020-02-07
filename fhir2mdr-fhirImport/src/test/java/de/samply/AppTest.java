@@ -1,7 +1,7 @@
 package de.samply;
 
 import de.samply.fhir2mdr.xml.ModelToXSDObjects;
-import de.samply.mdr.xsd.Export;
+import de.samply.schema.mdr.common.Export;
 import org.junit.Test;
 import de.samply.fhir2mdr.model.*;
 
@@ -21,15 +21,10 @@ public class AppTest {
       val.setRegex(".*");
       de.setValidation(val);
       de.getSlots().put("test","wert");
-      DataElement de2 = new DataElement();
-      de2.setLabel("en","english only","this dataelement only exists in english");
-      de2.setValidation(new BooleanType());
       gr.getMembers().add(de);
-      gr.getMembers().add(de2);
       gr.setLabel("de","Testgruppe","Gruppe zu Demozwecken");
 
       Group sub = new Group();
-      sub.getMembers().add(de2);
       gr.getMembers().add(sub);
       sub.setLabel("de","Subgroup","test for nesting");
 

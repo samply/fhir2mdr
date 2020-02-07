@@ -5,10 +5,8 @@ import de.samply.fhir2mdr.model.DataElement;
 import de.samply.fhir2mdr.model.Element;
 import de.samply.fhir2mdr.model.Namespace;
 import de.samply.fhir2mdr.model.PermissibleValue;
-import de.samply.mdr.xsd.*;
+import de.samply.schema.mdr.common.*;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.namespace.QName;
 import java.math.BigInteger;
 import java.util.Map;
 import java.util.UUID;
@@ -31,7 +29,7 @@ public class ModelToXSDObjects {
     private void convert(Namespace namespace, Export export){
 
         ObjectFactory objectFactory = new ObjectFactory();
-        de.samply.mdr.xsd.Namespace xmlNamespace = new de.samply.mdr.xsd.Namespace();
+        de.samply.schema.mdr.common.Namespace xmlNamespace = new de.samply.schema.mdr.common.Namespace();
 
         setNewUUID(xmlNamespace);
         this.namespaceUUID = xmlNamespace.getUuid();
@@ -83,7 +81,7 @@ public class ModelToXSDObjects {
     }
 
     private String convert(DataElement dataElement,Export export){
-        de.samply.mdr.xsd.DataElement xmlElement = new de.samply.mdr.xsd.DataElement();
+        de.samply.schema.mdr.common.DataElement xmlElement = new de.samply.schema.mdr.common.DataElement();
         setNewUUID(xmlElement);
         xmlElement.setValueDomain(extractValueDomain(dataElement, extractScopedIdentifer(dataElement,xmlElement.getUuid()), export));
         export.getElement().add(objectFactory.createDataElement(xmlElement));
@@ -177,7 +175,7 @@ public class ModelToXSDObjects {
         xmlVal.setMaxCharacters(BigInteger.ZERO);
 
         for(PermissibleValue value:val.getValues()){
-            de.samply.mdr.xsd.PermissibleValue xmlValue = new de.samply.mdr.xsd.PermissibleValue();
+            de.samply.schema.mdr.common.PermissibleValue xmlValue = new de.samply.schema.mdr.common.PermissibleValue();
             setNewUUID(xmlValue);
             xmlValue.setValueDomain(xmlVal.getUuid());
             xmlValue.setValue(value.getPermittedValue());
@@ -198,6 +196,7 @@ public class ModelToXSDObjects {
     private ScopedIdentifier extractScopedIdentifer(ElementWithSlots elem, String uuid ){
         ScopedIdentifier identifier = new ScopedIdentifier();
         setNewUUID(identifier);
+        identifier.setStatus(Status.DRAFT);
         identifier.setDefinitions(convertDefinitions(elem, uuid));
         identifier.setSlots(convertSlots(elem));
         identifier.setNamespace(this.namespaceUUID);
@@ -207,7 +206,7 @@ public class ModelToXSDObjects {
         return identifier;
     }
 
-    private void setNewUUID(de.samply.mdr.xsd.Element element){
+    private void setNewUUID(de.samply.schema.mdr.common.Element element){
         element.setUuid(UUID.randomUUID().toString());
     }
 
