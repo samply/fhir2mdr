@@ -83,11 +83,12 @@ public class ModelToXSDObjects {
     private String convert(DataElement dataElement,Export export){
         de.samply.schema.mdr.common.DataElement xmlElement = new de.samply.schema.mdr.common.DataElement();
         setNewUUID(xmlElement);
-        xmlElement.setValueDomain(extractValueDomain(dataElement, extractScopedIdentifer(dataElement,xmlElement.getUuid()), export));
+        ScopedIdentifier identifier = extractScopedIdentifer(dataElement, xmlElement.getUuid());
+        export.getElement().add(objectFactory.createScopedIdentifier(identifier));
+        xmlElement.setValueDomain(extractValueDomain(dataElement, identifier, export));
         export.getElement().add(objectFactory.createDataElement(xmlElement));
 
-
-        return xmlElement.getUuid();
+        return identifier.getUuid();
 
 
     }

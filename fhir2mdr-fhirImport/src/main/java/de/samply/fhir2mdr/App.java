@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import de.samply.schema.mdr.common.Export;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -63,8 +64,10 @@ public final class App {
      */
     public static void main(String[] args) throws ParseException {
         Options options = new Options();
-        options.addOption("i", "input", true, "Directory containing FHIR resources").addOption("o", "output", true,
-                "Output directory for MDR-XML");
+        options.addOption("i", "input", true, "Directory containing FHIR resources")
+            .addOption("l","language",true,"Fallback language code for text fields, e.g. \"de\" or \"en\"")
+            .addOption("n","name",true," (optional) Name for the generated namespace")
+            .addOption("o", "output", true, " (optional) Output directory for MDR-XML");
 
         CommandLineParser parser = new DefaultParser();
 
@@ -73,10 +76,26 @@ public final class App {
         if (!cmd.hasOption("i")) {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp("FHIR2MDR", options);
+            return;
         }
         if (!cmd.hasOption("o")) {
             System.out.println("No output directory specified, writing to input directory...");
         }
+        String name;
+        if (!cmd.hasOption("n")) {
+            System.out.println("No name specified, namespace will be called \"fhir\" ");
+            name = "fhir";
+        }else{
+            name = cmd.getOptionValue("n");
+        }
+        String language;
+        if (!cmd.hasOption("l")) {
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp("FHIR2MDR", options);
+        }else{
+            language = cmd.getOptionValue("l");
+        }
+
         Path inputDir = null;
         try {
             inputDir = Paths.get(cmd.getOptionValue("i"));
@@ -108,12 +127,9 @@ public final class App {
 
         System.out.println(String.format("Found %i profiles with snapshots", profiles.size()));
 
-        // Create new Namespace
-        // For each attribute
-        // If MS
-        // Resolve terminologies when possible
-        // Map fields
-        // Add to Samply List as DE
+        //Export export = FhirParser.convertFhirResources(profiles,conformanceResourcesByUrl,name,language);
+
+        //TODO write export
 
     }
 

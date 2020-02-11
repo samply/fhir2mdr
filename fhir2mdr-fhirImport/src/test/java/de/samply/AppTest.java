@@ -28,6 +28,16 @@ public class AppTest {
       gr.getMembers().add(sub);
       sub.setLabel("de","Subgroup","test for nesting");
 
+      DataElement de2 = new DataElement();
+      de2.setLabel("de","insubgroup","this de is in a subgroup");
+      IntegerType intVal = new IntegerType();
+      intVal.setRangeTo(100);
+      intVal.setRangeFrom(0);
+      intVal.setUnitOfMeasure("min");
+      de2.setValidation(intVal);
+
+      sub.getMembers().add(de2);
+
       Namespace namespace = new Namespace();
       namespace.getMembers().add(gr);
       namespace.setName("test");
