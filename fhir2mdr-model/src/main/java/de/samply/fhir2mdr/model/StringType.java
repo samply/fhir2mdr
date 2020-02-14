@@ -9,7 +9,7 @@ public class StringType implements IValidationType {
   private String regex;
 
     @SerializedName("maximum_character_quantity")
-    private int maxLength;
+    private Integer maxLength;
 
     public String getRegex() {
         return regex;
@@ -19,11 +19,11 @@ public class StringType implements IValidationType {
         this.regex = regex;
     }
 
-    public int getMaxLength() {
+    public Integer getMaxLength() {
         return maxLength;
     }
 
-    public void setMaxLength(int maxLength) {
+    public void setMaxLength(Integer maxLength) {
         this.maxLength = maxLength;
     }
 
