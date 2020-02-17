@@ -118,14 +118,16 @@ public class ModelToXSDObjects {
         }
         if(val.getType().equals(new FloatType().getType())){
             FloatType fVal = (FloatType) val;
-            //TOD Nullcheck
-            String range = fVal.getRangeFrom()+"<=x<="+fVal.getRangeTo();
+            if(fVal.getRangeFrom() != null && fVal.getRangeTo() != null){
+                String range = fVal.getRangeFrom().toString()+"<=x<="+fVal.getRangeTo().toString();
+                xmlVal.setFormat(range);
+                xmlVal.setDescription(range);
+                xmlVal.setValidationData(range);
+                xmlVal.setValidationType("FLOATRANGE");
+            }
+
             xmlVal.setDatatype("FLOAT");
-            xmlVal.setFormat(range);
             xmlVal.setMaxCharacters(BigInteger.ZERO);
-            xmlVal.setDescription(range);
-            xmlVal.setValidationType("FLOATRANGE");
-            xmlVal.setValidationData(range);
             if(fVal.getUnitOfMeasure() == null){
                 xmlVal.setUnitOfMeasure("");
             }else {
@@ -134,14 +136,15 @@ public class ModelToXSDObjects {
         }
         if(val.getType().equals(new IntegerType().getType())){
             IntegerType iVal = (IntegerType) val;
-            //TOD Nullcheck
-            String range = iVal.getRangeFrom()+"<=x<="+iVal.getRangeTo();
+            if(iVal.getRangeFrom() != null && iVal.getRangeTo() != null){
+                String range = iVal.getRangeFrom().toString() +"<=x<="+iVal.getRangeTo().toString();
+                xmlVal.setFormat(range);
+                xmlVal.setDescription(range);
+                xmlVal.setValidationType("INTEGERRANGE");
+                xmlVal.setValidationData(range);
+            }
             xmlVal.setDatatype("INTEGER");
-            xmlVal.setFormat(range);
             xmlVal.setMaxCharacters(BigInteger.ZERO);
-            xmlVal.setDescription(range);
-            xmlVal.setValidationType("INTEGERRANGE");
-            xmlVal.setValidationData(range);
             if(iVal.getUnitOfMeasure() == null){
                 xmlVal.setUnitOfMeasure("");
             }else {
