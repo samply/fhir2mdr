@@ -25,4 +25,20 @@ public class Group extends ElementWithSlots{
     public void setMembers(List<ElementWithSlots> members) {
         this.members = members;
     }
+
+    public void removeEmptyGroups(){
+        List<ElementWithSlots> cleanedMembers = new ArrayList<>();
+        cleanedMembers.addAll(this.members);
+        for(ElementWithSlots elem : this.members){
+            if(elem.getType().equals(new Group().getType())){
+                Group subgroup = (Group) elem;
+                subgroup.removeEmptyGroups();
+                if(subgroup.getMembers().isEmpty()){
+                    cleanedMembers.remove(subgroup);
+                }
+            }
+
+        }
+        this.members = cleanedMembers;
+    }
 }

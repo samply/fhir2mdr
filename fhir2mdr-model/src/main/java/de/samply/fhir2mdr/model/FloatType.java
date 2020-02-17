@@ -4,23 +4,23 @@ public class FloatType extends NumericalType{
 
     private final static String type = "float";
 
-    private float rangeFrom;
+    private Float rangeFrom;
 
-    private float rangeTo;
+    private Float rangeTo;
 
-    public float getRangeFrom() {
+    public Float getRangeFrom() {
         return rangeFrom;
     }
 
-    public void setRangeFrom(float rangeFrom) {
+    public void setRangeFrom(Float rangeFrom) {
         this.rangeFrom = rangeFrom;
     }
 
-    public float getRangeTo() {
+    public Float getRangeTo() {
         return rangeTo;
     }
 
-    public void setRangeTo(float rangeTo) {
+    public void setRangeTo(Float rangeTo) {
         this.rangeTo = rangeTo;
     }
 

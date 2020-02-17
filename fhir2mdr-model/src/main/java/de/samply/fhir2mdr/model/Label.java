@@ -11,6 +11,11 @@ public class Label {
 
     public Label(){
     }
+    public Label(String langCode,String designation, String definition){
+        this.langCode = langCode;
+        this.designation = designation;
+        this.definition = definition;
+    }
 
     public Label(String langCode){
         this.langCode = langCode;

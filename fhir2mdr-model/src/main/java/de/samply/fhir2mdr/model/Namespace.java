@@ -1,5 +1,6 @@
 package de.samply.fhir2mdr.model;
 
+import javax.naming.Name;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,4 +29,20 @@ public class Namespace extends Element {
     }
 
     private String name;
+
+    public void removeEmptyGroups(){
+        List<ElementWithSlots> cleanedMembers = new ArrayList<>();
+        cleanedMembers.addAll(this.members);
+        for(ElementWithSlots elem : this.members){
+            if(elem.getType().equals(new Group().getType())){
+                Group subgroup = (Group) elem;
+                subgroup.removeEmptyGroups();
+                if(subgroup.getMembers().isEmpty()){
+                    cleanedMembers.remove(subgroup);
+                }
+            }
+
+        }
+        this.members = cleanedMembers;
+    }
 }

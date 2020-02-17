@@ -4,23 +4,23 @@ public class IntegerType extends NumericalType {
 
     private final static String type = "integer";
 
-    private int rangeFrom;
+    private Integer rangeFrom;
 
-    private int rangeTo;
+    private Integer rangeTo;
 
-    public int getRangeFrom() {
+    public Integer getRangeFrom() {
         return rangeFrom;
     }
 
-    public void setRangeFrom(int rangeFrom) {
+    public void setRangeFrom(Integer rangeFrom) {
         this.rangeFrom = rangeFrom;
     }
 
-    public int getRangeTo() {
+    public Integer getRangeTo() {
         return rangeTo;
     }
 
-    public void setRangeTo(int rangeTo) {
+    public void setRangeTo(Integer rangeTo) {
         this.rangeTo = rangeTo;
     }
 
