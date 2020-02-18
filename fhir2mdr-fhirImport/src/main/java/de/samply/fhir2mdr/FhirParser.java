@@ -1,17 +1,26 @@
 package de.samply.fhir2mdr;
 
+import ca.uhn.fhir.context.FhirContext;
 import de.samply.fhir2mdr.model.DataElement;
 import de.samply.fhir2mdr.model.*;
+import org.hl7.fhir.r4.conformance.ProfileUtilities;
+import org.hl7.fhir.r4.hapi.ctx.DefaultProfileValidationSupport;
+import org.hl7.fhir.r4.hapi.validation.SnapshotGeneratingValidationSupport;
+import org.hl7.fhir.r4.hapi.validation.ValidationSupportChain;
 import org.hl7.fhir.r4.model.ElementDefinition;
 import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.model.StructureDefinition;
+import org.hl7.fhir.r4.model.Type;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class FhirParser {
+
+    private static final FhirContext fhirContext = FhirContext.forR4();
 
     private Map<String,Resource> conformanceResourcesByUrl;
     private List<ElementDefinition> processedElements;
@@ -40,6 +49,13 @@ public class FhirParser {
             group.setLabel(language,profile.getTitle(),profile.getDescription());
         }
 
+        if(!profile.hasSnapshot()){
+            DefaultProfileValidationSupport defaultSupport = new DefaultProfileValidationSupport();
+            SnapshotGeneratingValidationSupport snapshotGenerator = new SnapshotGeneratingValidationSupport(fhirContext, defaultSupport);
+            ValidationSupportChain chain = new ValidationSupportChain(defaultSupport, snapshotGenerator);
+            StructureDefinition snapshot = chain.generateSnapshot(profile, profile.getUrl(), null, profile.getName());
+            profile = snapshot;
+        }
         elementsIntoGroup(profile.getSnapshot().getElement(),group,language);
 
         return group;
@@ -73,7 +89,7 @@ public class FhirParser {
             }
 
             // Add to Samply List as DE
-            group.getMembers().add(parseDataElement(attr, language));
+            group.getMembers().addAll(parseDataElement(attr, language));
         }
         return group;
     }
@@ -86,12 +102,21 @@ public class FhirParser {
             .collect(Collectors.toList());
     }
 
-    private DataElement parseDataElement(ElementDefinition attr, String language){
-        DataElement element = new DataElement();
-        extractLabel(element,attr, language);
-        //Validation
-        element.setValidation(parseValidation(attr));
-        return element;
+    /**
+     * Creates one DataElement for each allowed data type
+     * @param attr
+     * @param language
+     * @return
+     */
+    private List<DataElement> parseDataElement(ElementDefinition attr, String language){
+        List<DataElement> results = new ArrayList<>();
+        for(IValidationType val:parseValidation(attr)){
+            DataElement element = new DataElement();
+            extractLabel(element,attr, language);
+            element.setValidation(val);
+            results.add(element);
+        }
+        return results;
     }
 
     private Element extractLabel(Element element, ElementDefinition attr, String language){
@@ -115,32 +140,38 @@ public class FhirParser {
     }
 
 
-    private IValidationType parseValidation(ElementDefinition attr){
-        //if binding, try to parse valuelist, if not possible continue and later parse as coding datatype
-        if(attr.hasBinding()){
+    private List<IValidationType> parseValidation(ElementDefinition attr) {
+        //if binding, try to parse valuelist, if not possible continue and return string type
+        if (attr.hasBinding()) {
             EnumeratedType valueList = resolveBinding(attr);
-            if(valueList != null){
-                return valueList;
+            if (valueList != null) {
+                return Collections.singletonList(valueList);
+            } else {
+                return Collections.singletonList(new StringType());
             }
         }
 
-        List<IValidationType> vals = new ArrayList<>();
-        for (ElementDefinition.TypeRefComponent type: attr.getType()) {
-            if(type.getCode() == null){
-                continue;
-            }
-            String code = type.getCode();
-            switch (code){
-                default: vals.add(new StringType());
+        return attr.getType().stream().map( t -> parseSingleTypeValidation(t,attr))
+            .collect(Collectors.toList());
 
-            }
+    }
 
-        }
-
-
-        return new StringType();
+    private IValidationType parseSingleTypeValidation(ElementDefinition.TypeRefComponent type,ElementDefinition attr){
+        String code = type.getCode();
         //TODO
-       // return validation;
+        switch (code) {
+            default:
+                return new StringType();
+            case "boolean":
+                return new BooleanType();
+            case "integer":
+                IntegerType iVal = new IntegerType();
+               if(attr.hasMinValueIntegerType()){
+                   //TODO
+               }
+                return iVal;
+
+        }
 
     }
 
