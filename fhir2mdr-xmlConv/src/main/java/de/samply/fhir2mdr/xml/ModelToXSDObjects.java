@@ -107,7 +107,7 @@ public class ModelToXSDObjects {
             xmlVal.setDatatype("BOOLEAN");
             xmlVal.setFormat("");
             xmlVal.setMaxCharacters(BigInteger.ZERO);
-            xmlVal.setDescription("");
+            xmlVal.setDescription("TRUE/FALSE");
             xmlVal.setValidationType("NONE");
             xmlVal.setValidationData("");
         }
@@ -124,6 +124,10 @@ public class ModelToXSDObjects {
                 xmlVal.setDescription(range);
                 xmlVal.setValidationData(range);
                 xmlVal.setValidationType("FLOATRANGE");
+            }else{
+                xmlVal.setFormat("");
+                xmlVal.setDescription("No limits specified");
+                xmlVal.setValidationType("NONE");
             }
 
             xmlVal.setDatatype("FLOAT");
@@ -142,6 +146,10 @@ public class ModelToXSDObjects {
                 xmlVal.setDescription(range);
                 xmlVal.setValidationType("INTEGERRANGE");
                 xmlVal.setValidationData(range);
+            }else{
+                xmlVal.setFormat("");
+                xmlVal.setDescription("No limits specified");
+                xmlVal.setValidationType("NONE");
             }
             xmlVal.setDatatype("INTEGER");
             xmlVal.setMaxCharacters(BigInteger.ZERO);
