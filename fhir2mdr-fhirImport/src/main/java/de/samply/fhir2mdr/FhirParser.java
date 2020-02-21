@@ -167,9 +167,34 @@ public class FhirParser {
             case "integer":
                 IntegerType iVal = new IntegerType();
                if(attr.hasMinValueIntegerType()){
-                   //TODO
+                   iVal.setRangeFrom(attr.getMinValueIntegerType().getValue());
+               }
+               if(attr.hasMaxValueIntegerType()){
+                   iVal.setRangeTo(attr.getMaxValueIntegerType().getValue());
                }
                 return iVal;
+            case "unsignedInt":
+                IntegerType uiVal = new IntegerType();
+                if(attr.hasMinValueUnsignedIntType()){
+                    uiVal.setRangeFrom(attr.getMinValueUnsignedIntType().getValue());
+                }else{
+                    uiVal.setRangeFrom(0);
+                }
+                if(attr.hasMaxValueUnsignedIntType()){
+                    uiVal.setRangeTo(attr.getMaxValueUnsignedIntType().getValue());
+                }
+                return uiVal;
+            case "positiveInt":
+                IntegerType piVal = new IntegerType();
+                if(attr.hasMinValuePositiveIntType()){
+                    piVal.setRangeFrom(attr.getMinValuePositiveIntType().getValue());
+                }else{
+                    piVal.setRangeFrom(1);
+                }
+                if(attr.hasMaxValuePositiveIntType()){
+                    piVal.setRangeTo(attr.getMaxValuePositiveIntType().getValue());
+                }
+                return piVal;
 
         }
 
