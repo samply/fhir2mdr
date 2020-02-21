@@ -29,7 +29,7 @@ public class AppTest {
       gr.setLabel("de","Testgruppe","Gruppe zu Demozwecken");
 
       Group sub = new Group();
-      gr.getMembers().add(sub);
+     gr.getMembers().add(sub);
       sub.setLabel("de","Subgroup","test for nesting");
 
       DataElement de2 = new DataElement();
@@ -40,7 +40,7 @@ public class AppTest {
       intVal.setUnitOfMeasure("min");
       de2.setValidation(intVal);
 
-      sub.getMembers().add(de2);
+     sub.getMembers().add(de2);
 
       Namespace namespace = new Namespace();
       namespace.getMembers().add(gr);

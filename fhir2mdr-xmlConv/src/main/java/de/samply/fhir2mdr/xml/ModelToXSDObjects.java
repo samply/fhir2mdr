@@ -76,7 +76,7 @@ public class ModelToXSDObjects {
             }
         }
 
-        return xmlGroup.getUuid();
+        return groupIdentifier.getUuid();
 
     }
 
@@ -125,13 +125,14 @@ public class ModelToXSDObjects {
                 xmlVal.setValidationData(range);
                 xmlVal.setValidationType("FLOATRANGE");
             }else{
-                xmlVal.setFormat("");
-                xmlVal.setDescription("No limits specified");
-                xmlVal.setValidationType("NONE");
+                xmlVal.setFormat("x");
+                xmlVal.setDescription("x");
+                xmlVal.setValidationType("FLOAT");
+                xmlVal.setValidationData("x");
             }
 
             xmlVal.setDatatype("FLOAT");
-            xmlVal.setMaxCharacters(BigInteger.ZERO);
+            xmlVal.setMaxCharacters(BigInteger.valueOf(10));
             if(fVal.getUnitOfMeasure() == null){
                 xmlVal.setUnitOfMeasure("");
             }else {
