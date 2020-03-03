@@ -8,8 +8,6 @@ import org.hl7.fhir.r4.model.StructureDefinition;
 import org.junit.Test;
 import de.samply.fhir2mdr.model.*;
 
-import com.google.gson.Gson;
-
 import javax.xml.bind.JAXB;
 import java.util.Collections;
 
@@ -29,7 +27,7 @@ public class AppTest {
       gr.setLabel("de","Testgruppe","Gruppe zu Demozwecken");
 
       Group sub = new Group();
-     gr.getMembers().add(sub);
+      gr.getMembers().add(sub);
       sub.setLabel("de","Subgroup","test for nesting");
 
       DataElement de2 = new DataElement();

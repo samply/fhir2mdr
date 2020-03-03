@@ -1,16 +1,17 @@
 package de.samply.fhir2mdr;
 
 import ca.uhn.fhir.context.FhirContext;
+import de.samply.fhir2mdr.model.BooleanType;
 import de.samply.fhir2mdr.model.DataElement;
 import de.samply.fhir2mdr.model.*;
-import org.hl7.fhir.r4.conformance.ProfileUtilities;
+import de.samply.fhir2mdr.model.Element;
+import de.samply.fhir2mdr.model.Group;
+import de.samply.fhir2mdr.model.IntegerType;
+import de.samply.fhir2mdr.model.StringType;
 import org.hl7.fhir.r4.hapi.ctx.DefaultProfileValidationSupport;
 import org.hl7.fhir.r4.hapi.validation.SnapshotGeneratingValidationSupport;
 import org.hl7.fhir.r4.hapi.validation.ValidationSupportChain;
-import org.hl7.fhir.r4.model.ElementDefinition;
-import org.hl7.fhir.r4.model.Resource;
-import org.hl7.fhir.r4.model.StructureDefinition;
-import org.hl7.fhir.r4.model.Type;
+import org.hl7.fhir.r4.model.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,27 +24,32 @@ public class FhirParser {
     private static final FhirContext fhirContext = FhirContext.forR4();
 
     private Map<String,Resource> conformanceResourcesByUrl;
+    private String defaultLanguage;
     private List<ElementDefinition> processedElements;
 
-    public Namespace convertFhirResources(List<StructureDefinition> profiles, Map<String, Resource> conformanceResourcesByUrl, String name, String language){
+    public Namespace convertFhirResources(List<StructureDefinition> profiles, Map<String, Resource> conformanceResourcesByUrl, String name, String defaultLanguage){
         this.conformanceResourcesByUrl = conformanceResourcesByUrl;
+        this.defaultLanguage = defaultLanguage;
 
         // Create new Namespace
         Namespace namespace = new Namespace();
         namespace.setName(name);
         //For each profile
         for(StructureDefinition profile:profiles){
-            namespace.getMembers().add(convertProfile(profile,language));
+            namespace.getMembers().add(convertProfile(profile));
         }
 
         return namespace;
     }
 
-    private Group convertProfile(StructureDefinition profile,String language){
+    private Group convertProfile(StructureDefinition profile){
         this.processedElements = new ArrayList<ElementDefinition>();
         Group group = new Group();
+        String language;
         if(profile.hasLanguage()){
             language = profile.getLanguage();
+        }else {
+            language = defaultLanguage;
         }
         if(profile.getTitle() != null && profile.getDescription() != null){
             group.setLabel(language,profile.getTitle(),profile.getDescription());
@@ -141,8 +147,9 @@ public class FhirParser {
 
 
     private List<IValidationType> parseValidation(ElementDefinition attr) {
-        //if binding, try to parse valuelist, if not possible continue and return string type
-        if (attr.hasBinding()) {
+        //if (not example) binding, try to parse valuelist, if not possible continue and return string type
+        //TODO Maybe also create StringType for extensible/preferred with String Values?
+        if (attr.hasBinding() && !attr.getBinding().getStrength().equals(Enumerations.BindingStrength.EXAMPLE)) {
             EnumeratedType valueList = resolveBinding(attr);
             if (valueList != null) {
                 return Collections.singletonList(valueList);
@@ -158,12 +165,13 @@ public class FhirParser {
 
     private IValidationType parseSingleTypeValidation(ElementDefinition.TypeRefComponent type,ElementDefinition attr){
         String code = type.getCode();
-        //TODO
+        //TODO Custom parsing for more datatypes
         switch (code) {
             default:
                 return new StringType();
             case "boolean":
                 return new BooleanType();
+            case "Count" :
             case "integer":
                 IntegerType iVal = new IntegerType();
                if(attr.hasMinValueIntegerType()){
@@ -201,8 +209,33 @@ public class FhirParser {
     }
 
     private EnumeratedType resolveBinding(ElementDefinition attr){
-        //TODO
-        return null;
+        ValueSet values = (ValueSet) this.conformanceResourcesByUrl.get(attr.getBinding().getValueSet());
+        if(values == null || values.getExpansion().isEmpty()){
+            return null;
+        }
+        String language;
+        if(values.hasLanguage()){
+            language = values.getLanguage();
+        }else{
+            language = defaultLanguage;
+        }
+        EnumeratedType enumVal = new EnumeratedType();
+        for(ValueSet.ValueSetExpansionContainsComponent value : values.getExpansion().getContains()){
+            if(!value.getAbstract()){
+                String fullName = value.getSystem()+"#"+value.getCode();
+                PermissibleValue val = new PermissibleValue(fullName);
+                String designation;
+                if(value.hasDisplay()){
+                    designation = value.getDisplay();
+                }else {
+                    designation = value.getCode();
+                }
+                val.getLabels().put(language,new Label(language,designation,fullName));
+                enumVal.getValues().add(val);
+            }
+        }
+
+        return enumVal;
     }
 
 }

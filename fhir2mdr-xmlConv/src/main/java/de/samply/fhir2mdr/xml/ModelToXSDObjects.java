@@ -194,7 +194,7 @@ public class ModelToXSDObjects {
             xmlValue.setValue(value.getPermittedValue());
             export.getElement().add(objectFactory.createPermissibleValue(xmlValue));
 
-            //Labels for permissssibleValues need to go into the DataElement scopedIdentifer
+            //Labels for permissibleValues need to go into the DataElement scopedIdentifer
             Definitions valueDefinitions = convertDefinitions(value, xmlValue.getUuid());
             deIdentifier.getDefinitions().getDefinition().addAll(valueDefinitions.getDefinition());
         }
