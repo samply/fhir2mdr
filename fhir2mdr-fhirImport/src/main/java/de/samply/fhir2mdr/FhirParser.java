@@ -100,13 +100,47 @@ public class FhirParser {
         return group;
     }
 
-    private List<ElementDefinition> getAllChildren(String path, List<ElementDefinition> searchset){
-        return searchset.stream()
-            .filter(attr -> attr.getPath().startsWith(path))
-            //Filter out Root Element
-            .filter(attr -> !(attr.getPath().equals(path)))
-            .collect(Collectors.toList());
+    private ElementWithSlots parseExtension(ElementDefinition attr){
+        String sliceName = attr.getSliceName();
+        StructureDefinition extension = (StructureDefinition) this.conformanceResourcesByUrl.get(attr.getTypeFirstRep().getProfile());
+
+        if(!extension.hasSnapshot()){
+            DefaultProfileValidationSupport defaultSupport = new DefaultProfileValidationSupport();
+            SnapshotGeneratingValidationSupport snapshotGenerator = new SnapshotGeneratingValidationSupport(fhirContext, defaultSupport);
+            ValidationSupportChain chain = new ValidationSupportChain(defaultSupport, snapshotGenerator);
+            StructureDefinition snapshot = chain.generateSnapshot(extension, extension.getUrl(), null, extension.getName());
+            extension = snapshot;
+        }
+        return parseExtension(extension.getSnapshot().getElement(),"Extension",extension.getLanguage());
     }
+
+    ElementWithSlots parseExtension(List<ElementDefinition> extensionElements, String rootId, String language){
+
+        List<ElementWithSlots> elements = new ArrayList<>();
+        ElementDefinition valueElement = getElementById(rootId+".value[x]",extensionElements);
+        if(valueElement.getMax().equals("0")){
+            //Complex Extension
+            List<String> slices = getAllSliceNames(rootId+".extension",extensionElements);
+            for(String sliceName:slices){
+                String sliceId = rootId+".extension:"+sliceName;
+                elements.add(parseExtension(getAllChildrenSliceSensitive(sliceId,extensionElements),sliceId,language));
+            }
+        }else{
+            //If simple Extension (max value not 0), only parse value Element
+            elements.addAll(parseDataElement(valueElement,language));
+        }
+
+        if(elements.size() == 1){
+            return elements.get(0);
+        }
+        //Build Group
+        ElementDefinition rootElement = getElementById(rootId,extensionElements);
+        Group extensionGroup = new Group();
+        extensionGroup.setMembers(elements);
+        extensionGroup.setLabel(language,rootElement.getShort(),rootElement.getDefinition());
+        return extensionGroup;
+    }
+
 
     /**
      * Creates one DataElement for each allowed data type
@@ -236,6 +270,41 @@ public class FhirParser {
         }
 
         return enumVal;
+    }
+
+    private List<ElementDefinition> getAllChildren(String path, List<ElementDefinition> searchset){
+        return searchset.stream()
+            .filter(attr -> attr.getPath().startsWith(path))
+            //Filter out Root Element
+            .filter(attr -> !(attr.getPath().equals(path)))
+            .collect(Collectors.toList());
+    }
+
+    private List<ElementDefinition> getAllChildrenSliceSensitive(String id, List<ElementDefinition> searchset){
+        return searchset.stream()
+            .filter(attr -> attr.getId().startsWith(id))
+            //Filter out Root Element
+            .filter(attr -> !(attr.getId().equals(id)))
+            .collect(Collectors.toList());
+    }
+
+    private ElementDefinition getElementById(String id, List<ElementDefinition> searchset){
+
+        for(ElementDefinition elem:searchset){
+            if(elem.getId().equals(id)){
+                return elem;
+            }
+        }
+        return null;
+    }
+
+    private List<String> getAllSliceNames(String rootId, List<ElementDefinition> searchset){
+
+        return searchset.stream()
+            .filter(attr -> attr.getId().startsWith(rootId))
+            .map(attr -> attr.getId().substring(rootId.length()+1).split("\\.")[0])
+            .distinct().collect(Collectors.toList());
+
     }
 
 }
