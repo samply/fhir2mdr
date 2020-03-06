@@ -75,13 +75,14 @@ public class FhirParser {
                 continue;
             }
             // If MS
-            if (!(attr.hasMustSupport() && attr.getMustSupport() == true)) {
+            if (!(attr.hasMustSupport() && attr.getMustSupport())) {
                 processedElements.add(attr);
                 continue;
             }
             if (!attr.getType().isEmpty()) {
                 if (attr.getTypeFirstRep().getCode().equals("Extension")) {
-                    //TODO
+                    processedElements.add(attr);
+                    group.getMembers().add(parseExtension(attr));
                 }
                 if (attr.getTypeFirstRep().getCode().equals("BackboneElement")) {
                     List<ElementDefinition> children = getAllChildren(attr.getPath(), elements);
