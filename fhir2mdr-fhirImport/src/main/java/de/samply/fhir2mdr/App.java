@@ -64,8 +64,8 @@ public final class App {
      */
     public static void main(String[] args) throws ParseException {
         Options options = new Options();
-        options.addOption("i", "input", true, "Directory containing FHIR resources")
-            .addOption("l","language",true,"Fallback language code for text fields, e.g. \"de\" or \"en\"")
+        options.addRequiredOption("i", "input", true, "Directory containing FHIR resources")
+            .addOption("l","language",true,"Fallback language code for text fields, e.g. \"de\" or \"en\" (default: \"en\"")
             .addOption("n","name",true," (optional) Name for the generated namespace")
             .addOption("o", "output", true, " (optional) Output directory for MDR-XML");
 
@@ -90,8 +90,7 @@ public final class App {
         }
         String language;
         if (!cmd.hasOption("l")) {
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("FHIR2MDR", options);
+            language = "en";
         }else{
             language = cmd.getOptionValue("l");
         }
