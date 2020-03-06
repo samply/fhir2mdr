@@ -59,15 +59,14 @@ public class FhirParser {
             DefaultProfileValidationSupport defaultSupport = new DefaultProfileValidationSupport();
             SnapshotGeneratingValidationSupport snapshotGenerator = new SnapshotGeneratingValidationSupport(fhirContext, defaultSupport);
             ValidationSupportChain chain = new ValidationSupportChain(defaultSupport, snapshotGenerator);
-            StructureDefinition snapshot = chain.generateSnapshot(profile, profile.getUrl(), null, profile.getName());
-            profile = snapshot;
+            profile = chain.generateSnapshot(profile, profile.getUrl(), null, profile.getName());
         }
         elementsIntoGroup(profile.getSnapshot().getElement(),group,language);
 
         return group;
     }
 
-    private Group elementsIntoGroup(List<ElementDefinition> elements, Group group, String language) {
+    private void elementsIntoGroup(List<ElementDefinition> elements, Group group, String language) {
         // For each attribute
         for (ElementDefinition attr : elements) {
             //If not already processed
@@ -82,7 +81,7 @@ public class FhirParser {
             if (!attr.getType().isEmpty()) {
                 if (attr.getTypeFirstRep().getCode().equals("Extension")) {
                     processedElements.add(attr);
-                    group.getMembers().add(parseExtension(attr));
+                    group.getMembers().add(getAndParseExtensionStructure(attr));
                 }
                 if (attr.getTypeFirstRep().getCode().equals("BackboneElement")) {
                     List<ElementDefinition> children = getAllChildren(attr.getPath(), elements);
@@ -98,24 +97,21 @@ public class FhirParser {
             // Add to Samply List as DE
             group.getMembers().addAll(parseDataElement(attr, language));
         }
-        return group;
     }
 
-    private ElementWithSlots parseExtension(ElementDefinition attr){
-        String sliceName = attr.getSliceName();
-        StructureDefinition extension = (StructureDefinition) this.conformanceResourcesByUrl.get(attr.getTypeFirstRep().getProfile());
+    private ElementWithSlots getAndParseExtensionStructure(ElementDefinition attr){
+        StructureDefinition extension = (StructureDefinition) this.conformanceResourcesByUrl.get(attr.getTypeFirstRep().getProfile().get(0).asStringValue());
 
         if(!extension.hasSnapshot()){
             DefaultProfileValidationSupport defaultSupport = new DefaultProfileValidationSupport();
             SnapshotGeneratingValidationSupport snapshotGenerator = new SnapshotGeneratingValidationSupport(fhirContext, defaultSupport);
             ValidationSupportChain chain = new ValidationSupportChain(defaultSupport, snapshotGenerator);
-            StructureDefinition snapshot = chain.generateSnapshot(extension, extension.getUrl(), null, extension.getName());
-            extension = snapshot;
+            extension = chain.generateSnapshot(extension, extension.getUrl(), null, extension.getName());
         }
-        return parseExtension(extension.getSnapshot().getElement(),"Extension",extension.getLanguage());
+        return parseExtensionElements(extension.getSnapshot().getElement(),"Extension",extension.getLanguage());
     }
 
-    ElementWithSlots parseExtension(List<ElementDefinition> extensionElements, String rootId, String language){
+    private ElementWithSlots parseExtensionElements(List<ElementDefinition> extensionElements, String rootId, String language){
 
         List<ElementWithSlots> elements = new ArrayList<>();
         ElementDefinition valueElement = getElementById(rootId+".value[x]",extensionElements);
@@ -124,7 +120,7 @@ public class FhirParser {
             List<String> slices = getAllSliceNames(rootId+".extension",extensionElements);
             for(String sliceName:slices){
                 String sliceId = rootId+".extension:"+sliceName;
-                elements.add(parseExtension(getAllChildrenSliceSensitive(sliceId,extensionElements),sliceId,language));
+                elements.add(parseExtensionElements(getAllChildrenSliceSensitive(sliceId,extensionElements),sliceId,language));
             }
         }else{
             //If simple Extension (max value not 0), only parse value Element
@@ -160,7 +156,7 @@ public class FhirParser {
         return results;
     }
 
-    private Element extractLabel(Element element, ElementDefinition attr, String language){
+    private void extractLabel(Element element, ElementDefinition attr, String language){
         //Definition
         String designation;
         if(attr.hasLabel()){
@@ -177,7 +173,6 @@ public class FhirParser {
             }
         }
         element.setLabel(language,designation,definition);
-        return element;
     }
 
 
