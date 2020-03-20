@@ -25,5 +25,3 @@ buildNumber.properties
 .classpath
 .project
 .vscode/
-fhir2mdr-fhirImport/.idea/workspace.xml
-fhir2mdr-xmlConv/.idea/workspace.xml
