@@ -28,6 +28,7 @@ public class StringType implements IValidationType {
     }
 
     public StringType() {
+        this.regex = "";
     }
 
     public StringType(String regex, int maxLength) {
