@@ -233,6 +233,9 @@ public class ModelToXSDObjects {
             def.setUuid(uuid);
             definitions.getDefinition().add(def);
         }
+        if(definitions.getDefinition().isEmpty()){
+            return null;
+        }
         return definitions;
     }
 
@@ -243,6 +246,9 @@ public class ModelToXSDObjects {
             slot.setKey(e.getKey());
             slot.setValue(e.getValue());
             slots.getSlot().add(slot);
+        }
+        if(slots.getSlot().isEmpty()){
+            return null;
         }
         return slots;
     }

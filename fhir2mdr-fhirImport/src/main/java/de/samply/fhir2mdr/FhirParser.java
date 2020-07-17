@@ -13,6 +13,8 @@ import org.hl7.fhir.r4.hapi.validation.SnapshotGeneratingValidationSupport;
 import org.hl7.fhir.r4.hapi.validation.ValidationSupportChain;
 import org.hl7.fhir.r4.model.*;
 
+import javax.sound.midi.Soundbank;
+import javax.swing.plaf.synth.SynthOptionPaneUI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,6 +36,7 @@ public class FhirParser {
         // Create new Namespace
         Namespace namespace = new Namespace();
         namespace.setName(name);
+        namespace.setLabel("en","FHIR","Namespace generated from FHIR resources");
         //For each profile
         for(StructureDefinition profile:profiles){
             namespace.getMembers().add(convertProfile(profile));
@@ -51,8 +54,16 @@ public class FhirParser {
         }else {
             language = defaultLanguage;
         }
-        if(profile.getTitle() != null && profile.getDescription() != null){
-            group.setLabel(language,profile.getTitle(),profile.getDescription());
+        String designation ;
+        if(profile.getTitle() == null){
+            designation = profile.getName();
+        }else{
+            designation = profile.getTitle();
+        }
+        if(profile.getDescription() != null){
+            group.setLabel(language,designation,profile.getDescription());
+        }else {
+            group.setLabel(language,designation,"");
         }
 
         if(!profile.hasSnapshot()){
@@ -81,7 +92,8 @@ public class FhirParser {
             if (!attr.getType().isEmpty()) {
                 if (attr.getTypeFirstRep().getCode().equals("Extension")) {
                     processedElements.add(attr);
-                    group.getMembers().add(getAndParseExtensionStructure(attr));
+                    group.getMembers().add(getAndParseExtensionStructure(attr,language));
+                    continue;
                 }
                 if (attr.getTypeFirstRep().getCode().equals("BackboneElement")) {
                     List<ElementDefinition> children = getAllChildren(attr.getPath(), elements);
@@ -99,7 +111,8 @@ public class FhirParser {
         }
     }
 
-    private ElementWithSlots getAndParseExtensionStructure(ElementDefinition attr){
+    private ElementWithSlots getAndParseExtensionStructure(ElementDefinition attr,String language){
+        //TODO return from attr may have version appended with |
         StructureDefinition extension = (StructureDefinition) this.conformanceResourcesByUrl.get(attr.getTypeFirstRep().getProfile().get(0).asStringValue());
 
         if(!extension.hasSnapshot()){
@@ -108,30 +121,38 @@ public class FhirParser {
             ValidationSupportChain chain = new ValidationSupportChain(defaultSupport, snapshotGenerator);
             extension = chain.generateSnapshot(extension, extension.getUrl(), null, extension.getName());
         }
-        return parseExtensionElements(extension.getSnapshot().getElement(),"Extension",extension.getLanguage());
+        if(extension.getLanguage() != null){
+            language = extension.getLanguage();
+        }
+        Label extensionLabel = new Label(language,extension.getName(),extension.getDescription());
+
+        return parseExtensionElements(extension.getSnapshot().getElement(),extensionLabel,"Extension",language);
+
     }
 
-    private ElementWithSlots parseExtensionElements(List<ElementDefinition> extensionElements, String rootId, String language){
-
+    private ElementWithSlots parseExtensionElements(List<ElementDefinition> extensionElements, Label extensionLabel, String rootId, String language){
         List<ElementWithSlots> elements = new ArrayList<>();
         ElementDefinition valueElement = getElementById(rootId+".value[x]",extensionElements);
+        ElementDefinition rootElement = getElementById(rootId,extensionElements);
         if(valueElement.getMax().equals("0")){
             //Complex Extension
             List<String> slices = getAllSliceNames(rootId+".extension",extensionElements);
             for(String sliceName:slices){
                 String sliceId = rootId+".extension:"+sliceName;
-                elements.add(parseExtensionElements(getAllChildrenSliceSensitive(sliceId,extensionElements),sliceId,language));
+                ElementDefinition complexRootElement = getElementById(sliceId,extensionElements);
+                Label rootLabel = new Label(language, complexRootElement.getShort(), complexRootElement.getDefinition());
+                elements.add(parseExtensionElements(getAllChildrenSliceSensitive(sliceId,extensionElements),rootLabel,sliceId,language));
             }
         }else{
-            //If simple Extension (max value not 0), only parse value Element
+            //If simple Extension (max value not 0), only parse valueElement
             elements.addAll(parseDataElement(valueElement,language));
         }
 
         if(elements.size() == 1){
+            elements.get(0).setLabel(language, extensionLabel);
             return elements.get(0);
         }
         //Build Group
-        ElementDefinition rootElement = getElementById(rootId,extensionElements);
         Group extensionGroup = new Group();
         extensionGroup.setMembers(elements);
         extensionGroup.setLabel(language,rootElement.getShort(),rootElement.getDefinition());
@@ -157,7 +178,6 @@ public class FhirParser {
     }
 
     private void extractLabel(Element element, ElementDefinition attr, String language){
-        //Definition
         String designation;
         if(attr.hasLabel()){
             designation = attr.getLabel();

@@ -1,5 +1,8 @@
 package de.samply.fhir2mdr;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -13,6 +16,9 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import de.samply.fhir2mdr.model.Element;
+import de.samply.fhir2mdr.model.Namespace;
+import de.samply.fhir2mdr.xml.ModelToXSDObjects;
 import de.samply.schema.mdr.common.Export;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -28,6 +34,8 @@ import org.hl7.fhir.r4.model.ValueSet;
 import org.hl7.fhir.r4.model.StructureDefinition.StructureDefinitionKind;
 
 import ca.uhn.fhir.context.FhirContext;
+
+import javax.xml.bind.JAXB;
 
 public final class App {
 
@@ -62,12 +70,12 @@ public final class App {
      * @param args The arguments of the program.
      * @throws ParseException
      */
-    public static void main(String[] args) throws ParseException {
+    public static void main(String[] args) throws ParseException, IOException {
         Options options = new Options();
         options.addRequiredOption("i", "input", true, "Directory containing FHIR resources")
             .addOption("l","language",true,"Fallback language code for text fields, e.g. \"de\" or \"en\" (default: \"en\"")
             .addOption("n","name",true," (optional) Name for the generated namespace")
-            .addOption("o", "output", true, " (optional) Output directory for MDR-XML");
+            .addOption("o", "output", true, " (optional) Output file for MDR-XML");
 
         CommandLineParser parser = new DefaultParser();
 
@@ -77,9 +85,6 @@ public final class App {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp("FHIR2MDR", options);
             return;
-        }
-        if (!cmd.hasOption("o")) {
-            System.out.println("No output directory specified, writing to input directory...");
         }
         String name;
         if (!cmd.hasOption("n")) {
@@ -102,6 +107,13 @@ public final class App {
             System.out.println("Invalid Input directory " + e.getMessage());
             return;
         }
+        String outputFile;
+        if (!cmd.hasOption("o")) {
+            System.out.println("No output file specified, writing to fhir.xml...");
+            outputFile = "fhir.xml";
+        }else{
+            outputFile = cmd.getOptionValue("o");
+        }
 
         List<Resource> fhirResources = null;
         try{
@@ -116,19 +128,23 @@ public final class App {
                 .filter(t -> GET_URL_IF_STRUCTURE_OR_TERMINOLOGY.apply(t).isPresent())
                 .collect(Collectors.toMap(t -> GET_URL_IF_STRUCTURE_OR_TERMINOLOGY.apply(t).get(), Function.identity()));
 
-        System.out.println(String.format("Parsed %i conformance resources",  conformanceResourcesByUrl.size()));
+        System.out.println(String.format("Parsed %d conformance resources",  conformanceResourcesByUrl.size()));
 
 
         List<StructureDefinition> profiles =  conformanceResourcesByUrl.values().stream()
                 .filter(r -> r.getResourceType().equals(ResourceType.StructureDefinition))
                 .map(r -> (StructureDefinition) r).filter(r -> r.getKind().equals(StructureDefinitionKind.RESOURCE))
-                .filter(r -> !r.getSnapshot().isEmpty()).collect(Collectors.toList());
+                .collect(Collectors.toList());
 
-        System.out.println(String.format("Found %i profiles with snapshots", profiles.size()));
+        System.out.println(String.format("Found %d profiles", profiles.size()));
 
-        //Export export = FhirParser.convertFhirResources(profiles,conformanceResourcesByUrl,name,language);
+        FhirParser fhirParser = new FhirParser();
+        Namespace namespace = fhirParser.convertFhirResources(profiles,conformanceResourcesByUrl,name,language);
 
-        //TODO write export
+        ModelToXSDObjects toXml = new ModelToXSDObjects();
+        Export export = toXml.convert(namespace);
+        BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
+        JAXB.marshal(export,writer);
 
     }
 
