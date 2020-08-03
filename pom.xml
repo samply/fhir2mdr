@@ -2,7 +2,7 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.samply</groupId>
-    <artifactId>fhir2mdr-fhirImport</artifactId>
+    <artifactId>fhir2mdr</artifactId>
     <version>1.0-SNAPSHOT</version>
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -12,12 +12,7 @@
     <dependencies>
         <dependency>
             <groupId>de.samply</groupId>
-            <artifactId>fhir2mdr-model</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>de.samply</groupId>
-            <artifactId>fhir2mdr-xmlConv</artifactId>
+            <artifactId>MDRtools-xmlConv</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
