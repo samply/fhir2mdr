@@ -16,9 +16,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import de.samply.fhir2mdr.model.Element;
-import de.samply.fhir2mdr.model.Namespace;
-import de.samply.fhir2mdr.xml.ModelToXSDObjects;
+import de.samply.MDRtools.model.Namespace;
+import de.samply.MDRtools.xml.ModelToXSDObjects;
 import de.samply.schema.mdr.common.Export;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;

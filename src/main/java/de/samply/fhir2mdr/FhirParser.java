@@ -1,20 +1,18 @@
 package de.samply.fhir2mdr;
 
 import ca.uhn.fhir.context.FhirContext;
-import de.samply.fhir2mdr.model.BooleanType;
-import de.samply.fhir2mdr.model.DataElement;
-import de.samply.fhir2mdr.model.*;
-import de.samply.fhir2mdr.model.Element;
-import de.samply.fhir2mdr.model.Group;
-import de.samply.fhir2mdr.model.IntegerType;
-import de.samply.fhir2mdr.model.StringType;
+import de.samply.MDRtools.model.BooleanType;
+import de.samply.MDRtools.model.DataElement;
+import de.samply.MDRtools.model.*;
+import de.samply.MDRtools.model.Element;
+import de.samply.MDRtools.model.Group;
+import de.samply.MDRtools.model.IntegerType;
+import de.samply.MDRtools.model.StringType;
 import org.hl7.fhir.r4.hapi.ctx.DefaultProfileValidationSupport;
 import org.hl7.fhir.r4.hapi.validation.SnapshotGeneratingValidationSupport;
 import org.hl7.fhir.r4.hapi.validation.ValidationSupportChain;
 import org.hl7.fhir.r4.model.*;
 
-import javax.sound.midi.Soundbank;
-import javax.swing.plaf.synth.SynthOptionPaneUI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
