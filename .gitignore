@@ -27,3 +27,4 @@ buildNumber.properties
 .vscode/
 fhir2mdr-fhirImport/.idea/workspace.xml
 fhir2mdr-xmlConv/.idea/workspace.xml
+.editorconfig
