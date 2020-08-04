@@ -12,7 +12,7 @@
     <dependencies>
         <dependency>
             <groupId>de.samply</groupId>
-            <artifactId>MDRtools-xmlConv</artifactId>
+            <artifactId>MDRtools-XMLconv</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>

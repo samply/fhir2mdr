@@ -3,14 +3,10 @@ package de.samply;
 import de.samply.MDRtools.model.Element;
 import de.samply.MDRtools.model.Namespace;
 import de.samply.fhir2mdr.FhirParser;
-import de.samply.MDRtools.xml.ModelToXSDObjects;
-import de.samply.schema.mdr.common.Export;
 import org.hl7.fhir.r4.model.ElementDefinition;
 import org.hl7.fhir.r4.model.StructureDefinition;
 import org.junit.Test;
-import de.samply.fhir2mdr.model.*;
 
-import javax.xml.bind.JAXB;
 import java.util.Collections;
 
 public class AppTest {
