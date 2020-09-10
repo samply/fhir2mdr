@@ -82,7 +82,7 @@ public class FhirParser {
             if (processedElements.contains(attr)) {
                 continue;
             }
-            // If MS
+            // If not MS, skip
             if (!(attr.hasMustSupport() && attr.getMustSupport())) {
                 processedElements.add(attr);
                 continue;
@@ -172,6 +172,7 @@ public class FhirParser {
             element.setValidation(val);
             results.add(element);
         }
+        processedElements.add(attr);
         return results;
     }
 

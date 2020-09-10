@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import de.samply.MDRtools.model.Namespace;
 import de.samply.MDRtools.xml.ModelToXSDObjects;
+import de.samply.mdr2csv.MDR2CSV;
 import de.samply.schema.mdr.common.Export;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -74,7 +75,8 @@ public final class App {
         options.addRequiredOption("i", "input", true, "Directory containing FHIR resources")
             .addOption("l","language",true,"Fallback language code for text fields, e.g. \"de\" or \"en\" (default: \"en\"")
             .addOption("n","name",true," (optional) Name for the generated namespace")
-            .addOption("o", "output", true, " (optional) Output file for MDR-XML");
+            .addOption("o", "output", true, " (optional) Output file for MDR-XML")
+            .addOption("t","tableFormat",false,"Only create table format (no XML)");
 
         CommandLineParser parser = new DefaultParser();
 
@@ -140,10 +142,17 @@ public final class App {
         FhirParser fhirParser = new FhirParser();
         Namespace namespace = fhirParser.convertFhirResources(profiles,conformanceResourcesByUrl,name,language);
 
-        ModelToXSDObjects toXml = new ModelToXSDObjects();
-        Export export = toXml.convert(namespace);
-        BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
-        JAXB.marshal(export,writer);
+        if(cmd.hasOption("t")){
+            MDR2CSV csvConv = new MDR2CSV();
+            csvConv.writeCSV(csvConv.transformMDR(namespace,language), new BufferedWriter(new FileWriter(outputFile)));
+
+        }else{
+            ModelToXSDObjects toXml = new ModelToXSDObjects();
+            Export export = toXml.convert(namespace);
+            BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
+            JAXB.marshal(export,writer);
+        }
+
 
     }
 
